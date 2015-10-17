@@ -27,6 +27,17 @@ Then, write JS code with three.js as usual. `layeredTextureGen.generate()` funct
 
 ```
 <script>
+var width  = window.innerWidth;
+var height = window.innerHeight;
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 60, width / height, 1, 1000 );
+camera.position.set( 0, 10, 10 );
+camera.lookAt( scene.position );
+
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize( width, height );
+document.body.appendChild( renderer.domElement );
+
 
 var layer1 = new layeredTextureGen.Layer( {
   tileURL: './images/grass1.jpg',
@@ -52,7 +63,7 @@ var layer4 = new layeredTextureGen.Layer( {
   tileRepeat: new THREE.Vector2( 12, 12 )
 } );
 
-var layeredTexture = layeredTextureGen.generate( 2048, 2048, [
+var layeredTexture = layeredTextureGen.generate( 2048, 2048, renderer, [
   layer1, // bottom
   layer2,
   layer3,
@@ -68,17 +79,6 @@ layeredTexture.addEventListener( 'loaded', function () {
 
 } );
 
-
-var width  = window.innerWidth;
-var height = window.innerHeight;
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 60, width / height, 1, 1000 );
-camera.position.set( 0, 10, 10 );
-camera.lookAt( scene.position );
-
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize( width, height );
-document.body.appendChild( renderer.domElement );
 
 var plane = new THREE.Mesh(
   new THREE.PlaneBufferGeometry( 100, 100 ),
