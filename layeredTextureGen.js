@@ -1,10 +1,10 @@
 var layeredTextureGen = ( function () {
 
   var layeredTextureGen = {};
-
+  var textureLoader = new THREE.TextureLoader();
+  console.log( textureLoader );
   var scene = new THREE.Scene();
   var camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
-  var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true } );
   var quad = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), null );
   scene.add( quad );
 
@@ -109,16 +109,14 @@ var layeredTextureGen = ( function () {
     var that = this;
     var count = 0;
 
-    this.tile = THREE.ImageUtils.loadTexture(
+    this.tile = textureLoader.load(
       param.tileURL,
-      {},
       onload
     );
     this.tile.wrapS = THREE.RepeatWrapping;
     this.tile.wrapT = THREE.RepeatWrapping;
-    this.mask = THREE.ImageUtils.loadTexture(
+    this.mask = textureLoader.load(
       param.maskURL,
-      {},
       onload
     );
     this.tileRepeat = param.tileRepeat || new THREE.Vector2( 1, 1 );
@@ -138,12 +136,20 @@ var layeredTextureGen = ( function () {
   };
 
 
-  layeredTextureGen.generate = function ( width, height, layerArray ) {
+  layeredTextureGen.generate = function ( width, height, renderer, layerArray ) {
+
+    var texture = new THREE.WebGLRenderTarget( width, height, {
+        minFilter: THREE.LinearMipMapLinear,
+        magFilter: THREE.LinearFilter,
+        wrapS: THREE.ClampToEdgeWrapping,
+        wrapT: THREE.ClampToEdgeWrapping,
+        format: THREE.RGBFormat,
+        stencilBuffer: false,
+        depthBuffer: false,
+        type: THREE.FloatType
+    } );
 
     var count = 0;
-    var image = new Image();
-    var texture = new THREE.Texture( image );
-
     var uniforms = {};
 
     for ( var i = 0, l = layerArray.length; i < l; i ++ ) {
@@ -170,11 +176,9 @@ var layeredTextureGen = ( function () {
 
         quad.material = material;
         material.needsUpdate = true;
-        renderer.setSize( width, height );
-        renderer.render( scene, camera );
+        renderer.render( scene, camera, texture );
 
-        image.src = renderer.domElement.toDataURL( 'image/png' );
-        texture.needsUpdate = true;
+        // texture.needsUpdate = true;
 
         count ++;
 
